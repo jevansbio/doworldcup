@@ -332,10 +332,11 @@ do.world.cup=function(){
 	pngURLs <- paste0("https://", pngURLs)
 	
 	#download the flags
-	flagpngs=lapply(pngURLs,function(x){
-		readPNG(getURLContent(x))
-	})
-	
+	if(!exists("flagpngs")){
+		flagpngs<<-lapply(pngURLs,function(x){
+			readPNG(getURLContent(x))
+		})
+	}
 	
 	
 	# The dimensions of each item are equal to the pixel dimensions of the .PNG
@@ -405,42 +406,46 @@ do.world.cup=function(){
 	}
 	Sys.sleep(0.5)
 	plot(0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n",ylim=c(0,10),xlim=c(0,20))
-	ycoords=rep(c(6,0),each=4)
-	xcoords=rep(seq(1,21,6),2)-0.75
-	boxParameter <- 125
-	text(9.5,11,"Group Stage",cex=2.5)
-	for(i in 1:8){
-		colnames(groupscores2[[i]])[5]="Pts"
-		textycoords=rev(ycoords[i]+0.25+seq(0,1.5,0.5))
-		flagxcoords=xcoords[i]-1.5
-		rect(xcoords[i]-2.1,ycoords[i]+2.1,xcoords[i]+2.5,ycoords[i]+0.5+2.1,border=NA,col="gray88")
-		segments(xcoords[i]-2.1,ycoords[i]+2.1,xcoords[i]+2.5,ycoords[i]+2.1,lwd=2.5,col="gray75")
-		
-		addtable2plot(xcoords[i],ycoords[i],groupscores2[[i]],bty="n",display.rownames=F,hlines=TRUE,
-		vlines=F,lwd=0.01,box.col="gray88",xpad=0.3)
-		
-		
-		newtext=countrycode(row.names(groupscores2[[i]]),origin="country.name",destination="genc3c")
-		newtext[is.na(newtext)]=substr(toupper(row.names(groupscores2[[i]])[is.na(newtext)]),1,3)
-		text(xcoords[i],textycoords,newtext,pos=2)
-		text(xcoords[i]-1.2,ycoords[i]+3,paste("Group",LETTERS[i]),cex=1.5)
-		text(flagxcoords+0.15,ycoords[i]+2.35,"Country")
-		flagstoget=sapply(1:4,function(x){which(stats$Team==row.names(groupscores2[[i]])[x])})
-		for(j in 1:4){
-			currflag=flagpngs[[flagstoget[j]]]
-			Dims=flagDimensions[flagstoget[j], ]
-			rasterImage(currflag,  # Plot each flag with these boundaries:
-			flagxcoords-Dims[2]/boxParameter, textycoords[j]-Dims[1]/boxParameter,
-			flagxcoords+Dims[2]/boxParameter, textycoords[j]+Dims[1]/boxParameter)
-			rect(flagxcoords-Dims[2]/boxParameter, textycoords[j]-Dims[1]/boxParameter,
-			flagxcoords+Dims[2]/boxParameter, textycoords[j]+Dims[1]/boxParameter)
+	showgroups=function(results=F){
+		ycoords=rep(c(6,0),each=4)
+		xcoords=rep(seq(1,21,6),2)-0.75
+		boxParameter <- 125
+		text(9.5,11,"Group Stage",cex=2.5)
+		for(i in 1:8){
+			colnames(groupscores2[[i]])[5]="Pts"
+			textycoords=rev(ycoords[i]+0.25+seq(0,1.5,0.5))
+			flagxcoords=xcoords[i]-1.5
+			rect(xcoords[i]-2.1,ycoords[i]+2.1,xcoords[i]+2.5,ycoords[i]+0.5+2.1,border=NA,col="gray88")
+			segments(xcoords[i]-2.1,ycoords[i]+2.1,xcoords[i]+2.5,ycoords[i]+2.1,lwd=2.5,col="gray75")
+			
+			if(results){
+				addtable2plot(xcoords[i],ycoords[i],groupscores2[[i]],bty="n",display.rownames=F,hlines=TRUE,
+				vlines=F,lwd=0.01,box.col="gray88",xpad=0.3)
+			}
+			
+			newtext=countrycode(row.names(groupscores2[[i]]),origin="country.name",destination="genc3c")
+			newtext[is.na(newtext)]=substr(toupper(row.names(groupscores2[[i]])[is.na(newtext)]),1,3)
+			text(xcoords[i],textycoords,newtext,pos=2)
+			text(xcoords[i]-1.2,ycoords[i]+3,paste("Group",LETTERS[i]),cex=1.5)
+			text(flagxcoords+0.15,ycoords[i]+2.35,"Country")
+			flagstoget=sapply(1:4,function(x){which(stats$Team==row.names(groupscores2[[i]])[x])})
+			for(j in 1:4){
+				currflag=flagpngs[[flagstoget[j]]]
+				Dims=flagDimensions[flagstoget[j], ]
+				rasterImage(currflag,  # Plot each flag with these boundaries:
+				flagxcoords-Dims[2]/boxParameter, textycoords[j]-Dims[1]/boxParameter,
+				flagxcoords+Dims[2]/boxParameter, textycoords[j]+Dims[1]/boxParameter)
+				rect(flagxcoords-Dims[2]/boxParameter, textycoords[j]-Dims[1]/boxParameter,
+				flagxcoords+Dims[2]/boxParameter, textycoords[j]+Dims[1]/boxParameter)
+			}
+			Sys.sleep(0.2)
 		}
-		Sys.sleep(0.2)
 	}
-	
-	
+	showgroups()
 	Sys.sleep(5)
-	
+	showgroups(T)
+	Sys.sleep(5)
+
 	plot(0,type="n",xaxt="n",yaxt="n",xlab="",ylab="",bty="n",ylim=c(0,10),xlim=c(0,20))
 	for(i in 1:3){
 		text(9.5,4,"Knockout round",cex=4,col="black")
